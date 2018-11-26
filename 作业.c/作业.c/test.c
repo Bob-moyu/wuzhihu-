@@ -115,4 +115,73 @@
 //	system("pause");
 //	return 0;
 //}
-//
+//求两个数的最大公约数
+//int main()
+//{
+//	int x;
+//	int y;
+//	int c = 0;
+//	scanf("%d %d", &x, &y);
+//	while (x%y != 0)
+//	{
+//		c = x%y;
+//		x = y;
+//		y = c;
+//	}
+//	printf("%d\n",y);
+//	system("pause");
+//	return 0;
+//}
+//1.交换两个数组的值
+//int main()
+//{
+//	int arr1[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
+//	int arr2[10] = { 0, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+//	int i = 0;
+//	int ret = 0;
+//	for (i = 0; i <= 10; i++)
+//	{
+//		ret = arr1[i];
+//		arr1[i] = arr2[i];
+//		arr2[i] = ret;
+//	}
+//	system("pause");
+//	return 0;
+//}
+//2. 计算1/1-1/2+1/3-1/4+1/5 …… + 1/99 - 1/100 的值
+//int main()
+//{
+//	int i = 0;
+//	float sum = 0;
+//	int flag=1;
+//	for (i = 1; i <= 100; i++)
+//	{
+//		sum += flag*1.0 / i;
+//		flag = -flag;
+//	}
+//	printf("%f\n", sum);
+//	system("pause");
+//	return 0;
+//}
+//3. 编写程序数一下 1到 100 的所有整数中出现多少次数字9。
+//int main()
+//{
+//	int i = 0;
+//	int count = 0;
+//	int j = 0;
+//	for (i = 1; i <= 100; i++)
+//	{
+//		j = i % 10;
+//		if (j == 9)
+//		{
+//			count++;
+//		}
+//		if (i / 10 % 10 == 9)
+//		{
+//			count++;
+//		}
+//	}
+//	printf("%d\n", count);
+//	system("pause");
+//	return 0;
+//}
