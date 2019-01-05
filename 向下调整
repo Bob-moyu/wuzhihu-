@@ -1,0 +1,25 @@
+void AdjustDoen(int array[],int size,int root())
+{
+while(1){
+int left;
+left=2*root+1;
+if(size<=left)
+return;
+else
+{
+int min=left;
+int right=2*root+2;
+if(right<size&&array[right]<array[left])
+min=right;
+if(array[min]<array[root])
+{
+int t=array[root];
+array[root]=array[min];
+array[min]=t;
+root=min;
+}
+else
+return;
+}
+}
+}
