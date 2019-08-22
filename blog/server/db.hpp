@@ -14,7 +14,7 @@ namespace blog_system{
     //1.创建一个句柄
     MYSQL* connect_fd = mysql_init(NULL);
     //2.和数据库建立连接
-    if(mysql_real_connect(connect_fd,"127.0.0.1","root","52emmmmWZH",
+    if(mysql_real_connect(connect_fd,"127.0.0.1","root","",
           "blog_system",3306,NULL,0)==NULL){
       printf("连接失败!%s\n",mysql_error(connect_fd));
       return NULL;
@@ -44,29 +44,29 @@ namespace blog_system{
     //    tag_id:"标签"
     //}
     //最大的好处是方便扩展
-   // bool Insert(const Json::Value& blog){
-   //   //核心就是拼装sql语句
-   //   const std::string& content = blog["content"].asString();
-   //   //为什么to 的长度 size*2+1，根据文档的要求
-   //   //char* to = new char[conten.size()*2 + 1];
-   //   std::unique_ptr<char> to(new char[content.size() *2 + 1]);
-   //   mysql_real_escape_string(mysql_,to.get(),content.c_str(),content.size());
-   //   //为啥加4096，给其他内容留下4095的空间
-   //   std::unique_ptr<char> sql(new char[content.size() *2 + 4096]);
-   //   sprintf(sql.get(),"insert into blog_table Values(null,'%s','%s',%d,'%s')",
-   //     blog["title"].asCString(),
-   //     to.get(),
-   //     blog["tag_id"].asInt(),
-   //     blog["create_time"].asCString());
-   //   int ret = mysql_query(mysql_,sql.get());
-   //   if(ret != 0){
-   //     printf("执行插入博客失败！%s\n",mysql_error(mysql_));
-   //     return false;
-   //   }
-   //   printf("执行插入博客成功\n");
-   //   return true;
-   // }
-    bool Insert(const Json::Value& blog) {
+    bool Insert(const Json::Value& blog){
+      //核心就是拼装sql语句
+      const std::string& content = blog["content"].asString();
+      //为什么to 的长度 size*2+1，根据文档的要求
+      //char* to = new char[conten.size()*2 + 1];
+      std::unique_ptr<char> to(new char[content.size() *2 + 1]);
+      mysql_real_escape_string(mysql_,to.get(),content.c_str(),content.size());
+      //为啥加4096，给其他内容留下4095的空间
+      std::unique_ptr<char> sql(new char[content.size() *2 + 4096]);
+      sprintf(sql.get(),"insert into blog_table values(null,'%s','%s',%d,'%s')",
+        blog["title"].asCString(),
+        to.get(),
+        blog["tag_id"].asInt(),
+        blog["create_time"].asCString());
+      int ret = mysql_query(mysql_,sql.get());
+      if(ret != 0){
+        printf("执行插入博客失败！%s\n",mysql_error(mysql_));
+        return false;
+      }
+      printf("执行插入博客成功\n");
+      return true;
+    }
+  /*  bool Insert(const Json::Value& blog) {
       const std::string& content = blog["content"].asString();
       std::unique_ptr<char> content_escape(new char[content.size() * 2 + 1]);
       mysql_real_escape_string(mysql_, content_escape.get(), content.c_str(), content.size());
@@ -82,7 +82,7 @@ namespace blog_system{
       }
       return true;
 
-    }
+    }*/
     //blogs作为一个输出型参数
     bool SelectAll(Json::Value* blogs,const std::string& tag_id = ""){
       //查找不需要很长的sql语句，所以固定长度
@@ -93,7 +93,7 @@ namespace blog_system{
       }
       else{
         //此时需要按照tag来筛选
-        sprintf(sql,"select blog_id,title,tag_id,create_time from blog_table where tag_id = %s",tag_id.c_str());
+        sprintf(sql,"select blog_id,title,tag_id,create_time from blog_table where tag_id = '%s'",tag_id.c_str());
       }
       int ret = mysql_query(mysql_,sql);
       if(ret !=0){
@@ -192,12 +192,10 @@ private:
   };
   class TagTable{
   public:
-    TagTable(MYSQL* mysql)
-      :mysql_(mysql)
-    {}
+    TagTable(MYSQL* mysql):mysql_(mysql){}
     bool Insert(const Json::Value& tag){
       char sql[1024 * 4] = {0};
-      sprintf(sql,"insert into tag_table Values(null,'%s')",tag["tag_name"].asCString());
+      sprintf(sql,"insert into tag_table values(null,'%s')",tag["tag_name"].asCString());
       int ret = mysql_query(mysql_,sql);
       if(ret != 0){
         printf("执行插入标签失败!%s\n",mysql_error(mysql_));

@@ -15,7 +15,7 @@ int main()
       //6）服务器的端口号
       //7）unix_sock NULL
       //8) client_flag
-  if(mysql_real_connect(connect_fd,"127.0.0.1","root","52emmmmWZH",
+  if(mysql_real_connect(connect_fd,"127.0.0.1","root","",
         "blog_system",3306,NULL,0)==NULL){
     printf("连接失败%s\n",mysql_error(connect_fd));
   }

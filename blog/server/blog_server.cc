@@ -7,21 +7,20 @@ MYSQL* mysql = NULL;
 int main(){
   using namespace httplib;
   using namespace blog_system;
+  Server server;
   //1.先和数据库建立好连接
   mysql = blog_system::MySQLInit();
   signal(SIGINT,[](int) {blog_system::MySQLRelease(mysql);exit(0);});
   //2.创建相关数据库处理对象
   BlogTable blog_table(mysql);
   TagTable tag_table(mysql);
-  //3.创建服务器，并设置"路由"(HTTP协议中的路由，和IP协议的路由不一样)，此处的路由指的是把 方法 + path =>哪个处理函数 关联关系声明清楚
-  
-  Server server;
+  //3.创建服务器，并设置"路由"(HTTP协议中的路由，和IP协议的路由不一样)，此处的路由指的是把 方法 + path =>哪个处理函数 关联关系声明清楚  
   //新增博客
   server.Post("/blog",[&blog_table](const Request& req,Response& resp){
       printf("新增博客\n");
       //1.获取到请求中的body并解析成Json
       Json::Reader reader;
-      Json::StyledWriter writer;
+      Json::FastWriter writer;
       Json::Value req_json;
       Json::Value resp_json;
       bool ret = reader.parse(req.body,req_json);
@@ -90,7 +89,7 @@ int main(){
   server.Get(R"(/blog/(\d+))",[&blog_table](const Request& req,Response& resp){
       //1.解析获取到 blog_id
       Json::FastWriter writer;
-      int32_t blog_id =std::stoi(req.matches[1].str());
+      int32_t blog_id =std::stoi(req.matches[1]);
       printf("查看id为%d的博客！\n",blog_id);
       //2.直接调用数据库操作
       Json::Value resp_json;
@@ -103,14 +102,14 @@ int main(){
       return;
       }
       //3.包装一个执行正确的响应
-      resp_json["ok"] = true;
+     // resp_json["ok"] = true;
       resp.set_content(writer.write(resp_json),"application/json");
       return;
       });
   //修改某个博客
   server.Put(R"(/blog/(\d+))",[&blog_table](const Request& req,Response& resp){
       //1.先获取到博客id
-      int32_t blog_id = std::stoi(req.matches[1].str());
+      int32_t blog_id = std::stoi(req.matches[1]);
       printf("修改id为%d的博客！\n",blog_id);
       //2.获取请求并解析结果
       Json::Reader reader;
@@ -125,6 +124,7 @@ int main(){
       resp.set_content(writer.write(resp_json),"application/json");
       return;
       }
+   req_json["blog_id"] = blog_id;//从path>      中得到的id设置为json对象中  
       //3.校验参数是否符合预期
       if(req_json["title"].empty()|| req_json["content"].empty()|| req_json["tag_id"].empty()){
       resp_json["ok"] = false;
@@ -133,8 +133,7 @@ int main(){
       resp.set_content(writer.write(resp_json),"application/json");
       return;
       }
-      //4.调用数据库操作来完成更新博客
-      req_json["blog_id"] = blog_id;//从path中得到的id设置为json对象中
+      //4.调用数据库操作来完成修改
       ret =blog_table.Update(req_json);
       if(!ret)
       {
@@ -154,7 +153,7 @@ int main(){
       //1.先获取到blog_id
       Json::FastWriter writer;
       Json::Value resp_json;
-      int32_t blog_id = std::stoi(req.matches[1].str());
+      int32_t blog_id = std::stoi(req.matches[1]);
       printf("删除id为%d的博客\n",blog_id);
       //2.调用数据库操作
       bool ret = blog_table.Delete(blog_id);
@@ -216,7 +215,7 @@ int main(){
       Json::FastWriter writer;
       Json::Value resp_json;
       //1.解析出tag_id 
-      int32_t tag_id = std::stoi(req.matches[1].str());
+      int32_t tag_id = std::stoi(req.matches[1]);
       printf("删除id为%d的标签！\n",tag_id);
       //2.执行数据库操作
       bool ret = tag_table.Delete(tag_id);
@@ -253,11 +252,11 @@ int main(){
       resp.set_content(writer.write(tags),"application/json");
       return;
       });
-  server.Get("/", [](const Request& req, Response& resp) {
+ /* server.Get("/", [](const Request& req, Response& resp) {
       (void)req;
       resp.set_content("<html>hello</html>", "text/html");
 
-      });
+      });*/
   server.set_base_dir("./httproot");
   server.listen("0.0.0.0",9092);
   return 0;
